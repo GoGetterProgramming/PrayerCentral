@@ -118,25 +118,6 @@ namespace GG.PrayerCentral.Controllers
             return Ok();
         }
 
-        [AllowAnonymous]
-        [HttpPost]
-        public IActionResult RequestToken([FromBody] TokenRequest request)
-        {
-            return Ok();
-        }
-
-        [HttpGet("getstring")]
-        public IActionResult GetValue()
-        {
-            foreach (var claim in HttpContext.User.Claims)
-            {
-                var type = claim.Type;
-                var value = claim.Value;
-            }
-
-            return Ok("Here is your string");
-        }
-
         #region Token
 
         private string CreateToken(ApplicationUser user)
