@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using GG.PrayerCentral.Data;
+﻿using GG.PrayerCentral.Data;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +11,7 @@ namespace GG.PrayerCentral.DBContext
             
         }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<ApplicationUser> AppUsers { get; set; }
     }
