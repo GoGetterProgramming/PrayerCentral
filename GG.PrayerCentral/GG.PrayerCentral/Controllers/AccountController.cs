@@ -49,40 +49,38 @@ namespace GG.PrayerCentral.Controllers
 
         [HttpPost(nameof(RegisterUser))]
         [AllowAnonymous]
-        public Task<IActionResult> RegisterUser([FromBody] RegistrationModel registrationInfo)
+        public async Task<IActionResult> RegisterUser([FromBody] RegistrationModel registrationInfo)
         {
-            return Task.FromResult<IActionResult>(Ok(new { ModelState.IsValid, ModelState.Values }));
+            IdentityResult result = null;
 
-            //IdentityResult result = null;
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var authUser = new ApplicationUser
+                    {
+                        UserName = registrationInfo.Username,
+                        Email = registrationInfo.Email,
+                        FirstName = registrationInfo.FirstName,
+                        LastName = registrationInfo.LastName
+                    };
 
-            //if (ModelState.IsValid)
-            //{
-            //    try
-            //    {
-            //        var authUser = new ApplicationUser
-            //        {
-            //            UserName = registrationInfo.Username,
-            //            Email = registrationInfo.Email,
-            //            FirstName = registrationInfo.FirstName,
-            //            LastName = registrationInfo.LastName
-            //        };
+                    result = await _UserManager.CreateAsync(authUser, registrationInfo.Password);
 
-            //        result = await _UserManager.CreateAsync(authUser, registrationInfo.Password);
+                    if (result.Succeeded)
+                    {
+                        return Ok();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Ignore
+                }
 
-            //        if (result.Succeeded)
-            //        {
-            //            return Ok();
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        // Ignore
-            //    }
+                return BadRequest(result);
+            }
 
-            //    return BadRequest(result);
-            //}
-
-            //return BadRequest(ModelState);
+            return BadRequest(ModelState);
         }
 
         [HttpPost(nameof(RegisterOrganization))]
