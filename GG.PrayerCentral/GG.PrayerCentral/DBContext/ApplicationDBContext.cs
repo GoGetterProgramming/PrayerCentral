@@ -8,11 +8,18 @@ namespace GG.PrayerCentral.DBContext
     {
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
         {
-            
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<UserOrganization>().HasKey(c => new { c.OrganizationId, c.ApplicationUserId });
+
+            base.OnModelCreating(builder);
         }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<ApplicationUser> AppUsers { get; set; }
+        public DbSet<UserOrganization> UserOrganizations { get; set; }
     }
 }

@@ -4,12 +4,6 @@ using System.ComponentModel;
 
 namespace GG.PrayerCentral.Data
 {
-    public enum UserStatus
-    {
-        Online,
-        Offline
-    }
-
     public class ApplicationUser : IdentityUser
     {
         public string FirstName { get; set; }

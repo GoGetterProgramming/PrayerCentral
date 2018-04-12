@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GG.PrayerCentral.RequestData
 {
-    public class LoginInfo
+    public class LoginModel
     {
         [Required]
         public string Username { get; set; }
@@ -19,7 +19,7 @@ namespace GG.PrayerCentral.RequestData
         public DateTime ExpiresUtc { get; set; }
     }
 
-    public class RefreshTokenInfo
+    public class RefreshTokenModel
     {
         public string RefreshToken { get; set; }
     }

@@ -1,21 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using GG.PrayerCentral.Data;
-using GG.PrayerCentral.DBContext;
-using GG.PrayerCentral.RequestData;
-using Google.Apis.Oauth2.v2;
-using Google.Apis.Plus.v1;
-using Google.Apis.Plus.v1.Data;
-using Google.Apis.Services;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -23,9 +11,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using static Google.Apis.Plus.v1.Data.Person;
-using static Google.Apis.Plus.v1.PeopleResource;
+
+using GG.PrayerCentral.Data;
+using GG.PrayerCentral.DBContext;
+using GG.PrayerCentral.RequestData;
+using GG.PrayerCentral.Attributes;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -57,9 +47,47 @@ namespace GG.PrayerCentral.Controllers
             return Ok(User.Identity.IsAuthenticated);
         }
 
-        [HttpPost(nameof(Register))]
+        [HttpPost(nameof(RegisterUser))]
         [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] UserRegistrationInfo registrationInfo)
+        public Task<IActionResult> RegisterUser([FromBody] RegistrationModel registrationInfo)
+        {
+            return Task.FromResult<IActionResult>(Ok(new { ModelState.IsValid, ModelState.Values }));
+
+            //IdentityResult result = null;
+
+            //if (ModelState.IsValid)
+            //{
+            //    try
+            //    {
+            //        var authUser = new ApplicationUser
+            //        {
+            //            UserName = registrationInfo.Username,
+            //            Email = registrationInfo.Email,
+            //            FirstName = registrationInfo.FirstName,
+            //            LastName = registrationInfo.LastName
+            //        };
+
+            //        result = await _UserManager.CreateAsync(authUser, registrationInfo.Password);
+
+            //        if (result.Succeeded)
+            //        {
+            //            return Ok();
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        // Ignore
+            //    }
+
+            //    return BadRequest(result);
+            //}
+
+            //return BadRequest(ModelState);
+        }
+
+        [HttpPost(nameof(RegisterOrganization))]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterOrganization([FromBody] RegistrationModel registrationInfo)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +114,7 @@ namespace GG.PrayerCentral.Controllers
 
         [HttpPost(nameof(Login))]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginInfo loginInfo)
+        public async Task<IActionResult> Login([FromBody] LoginModel loginInfo)
         {
             RefreshToken refreshToken;
             LoginResponse loginResponse;
@@ -138,7 +166,7 @@ namespace GG.PrayerCentral.Controllers
 
         [HttpPost(nameof(RefreshToken))]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenInfo refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken.RefreshToken))
             {
