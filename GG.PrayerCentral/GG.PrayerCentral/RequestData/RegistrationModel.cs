@@ -18,7 +18,7 @@ namespace GG.PrayerCentral.RequestData
         [DataType(DataType.Password)]
         public string Password { get; set; }
         [Required]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [Compare(nameof(Password), ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
     }
 }

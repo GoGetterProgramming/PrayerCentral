@@ -16,6 +16,8 @@ using GG.PrayerCentral.Data;
 using GG.PrayerCentral.DBContext;
 using GG.PrayerCentral.RequestData;
 using GG.PrayerCentral.Attributes;
+using GG.PrayerCentral.EnumsAndConstants;
+using System.Collections.Generic;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -31,7 +33,11 @@ namespace GG.PrayerCentral.Controllers
         private readonly IConfiguration _Configuration;
         private readonly ILogger _Logger;
 
-        public AccountController(ApplicationDBContext dbContext, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, ILoggerFactory loggerFactory)
+        public AccountController(ApplicationDBContext dbContext,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IConfiguration configuration,
+            ILoggerFactory loggerFactory)
         {
             _DbContext = dbContext;
             _UserManager = userManager;
@@ -53,40 +59,36 @@ namespace GG.PrayerCentral.Controllers
         {
             IdentityResult result = null;
 
-            if (ModelState.IsValid)
+            try
             {
-                try
+                var authUser = new ApplicationUser
                 {
-                    var authUser = new ApplicationUser
-                    {
-                        UserName = registrationInfo.Username,
-                        Email = registrationInfo.Email,
-                        FirstName = registrationInfo.FirstName,
-                        LastName = registrationInfo.LastName
-                    };
+                    UserName = registrationInfo.Username,
+                    Email = registrationInfo.Email,
+                    FirstName = registrationInfo.FirstName,
+                    LastName = registrationInfo.LastName
+                };
 
-                    result = await _UserManager.CreateAsync(authUser, registrationInfo.Password);
+                result = await _UserManager.CreateAsync(authUser, registrationInfo.Password);
 
-                    if (result.Succeeded)
-                    {
-                        return Ok();
-                    }
-                }
-                catch (Exception ex)
+                if (result.Succeeded)
                 {
-                    // Ignore
+                    return Ok();
                 }
-
-                return BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                // Ignore
             }
 
-            return BadRequest(ModelState);
+            return BadRequest(result);
         }
 
         [HttpPost(nameof(RegisterOrganization))]
         [AllowAnonymous]
         public async Task<IActionResult> RegisterOrganization([FromBody] RegistrationModel registrationInfo)
         {
+            return Ok();
             if (ModelState.IsValid)
             {
                 var authUser = new ApplicationUser
@@ -131,7 +133,7 @@ namespace GG.PrayerCentral.Controllers
 
                         loginResponse = new LoginResponse
                         {
-                            AccessToken = CreateToken(appUser),
+                            AccessToken = await CreateToken(appUser),
                             RefreshToken = refreshToken,
                             ExpiresUtc = DateTime.UtcNow.AddMinutes(30)
                         };
@@ -157,9 +159,10 @@ namespace GG.PrayerCentral.Controllers
         }
 
         [HttpPost(nameof(GetString))]
+        
         public IActionResult GetString()
         {
-            return Ok("Here is your string");
+            return Ok(HttpContext.User.Identity.IsAuthenticated);
         }
 
         [HttpPost(nameof(RefreshToken))]
@@ -196,18 +199,10 @@ namespace GG.PrayerCentral.Controllers
 
         #region Token
 
-        private string CreateToken(ApplicationUser user)
+        private async Task<string> CreateToken(ApplicationUser user)
         {
-            var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_Configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(_Configuration["Jwt:Issuer"], _Configuration["Jwt:Issuer"], claims, expires: DateTime.UtcNow.AddMinutes(30), signingCredentials: creds);
+            var now = DateTime.UtcNow;
+            var token = await GetSecurityToken(user, now, now.AddMinutes(30));
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
@@ -229,16 +224,7 @@ namespace GG.PrayerCentral.Controllers
                     ExpiresUtc = DateTime.UtcNow.AddYears(1)
                 };
 
-                var claims = new[] {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                };
-
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_Configuration["Jwt:Key"]));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-                var token = new JwtSecurityToken(_Configuration["Jwt:Issuer"], _Configuration["Jwt:Issuer"], claims, refreshToken.IssuedUtc, refreshToken.ExpiresUtc, creds);
+                var token = await GetSecurityToken(user, refreshToken.IssuedUtc, refreshToken.ExpiresUtc);
 
                 refreshToken.Token = new JwtSecurityTokenHandler().WriteToken(token);
                 refreshToken.User = user;
@@ -248,6 +234,28 @@ namespace GG.PrayerCentral.Controllers
             }
 
             return refreshToken;
+        }
+
+        private async Task<JwtSecurityToken> GetSecurityToken(ApplicationUser user, DateTime issuedUtc, DateTime expiresUtc)
+        {
+            JwtSecurityToken token;
+            List<Claim> claims = new List<Claim>();
+
+            claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.UserName));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+
+            foreach (var roleName in await _UserManager.GetRolesAsync(user))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, roleName));
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_Configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            token = new JwtSecurityToken(_Configuration["Jwt:Issuer"], _Configuration["Jwt:Issuer"], claims, issuedUtc, expiresUtc, creds);
+
+            return token;
         }
 
         #endregion

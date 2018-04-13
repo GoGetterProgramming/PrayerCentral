@@ -1,5 +1,6 @@
 ﻿using GG.PrayerCentral.Data;
 using GG.PrayerCentral.DBContext;
+using GG.PrayerCentral.EnumsAndConstants;
 using Microsoft.AspNetCore.Identity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,9 +20,9 @@ namespace GG.PrayerCentral.Configuration
 
         private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
         {
-            await CreateRole(roleManager, "Admin");
-            await CreateRole(roleManager, "Pastor");
-            await CreateRole(roleManager, "Member");            
+            await CreateRole(roleManager, RoleTypes.AdminIdentifier);
+            await CreateRole(roleManager, RoleTypes.PastorIdentifier);
+            await CreateRole(roleManager, RoleTypes.MemberIdentifier);            
         }
 
         private static async Task SeedUsers(UserManager<ApplicationUser> userManager)
@@ -36,19 +37,14 @@ namespace GG.PrayerCentral.Configuration
                     LastName = "Doell"
                 };
 
-                await userManager.CreateAsync(user);
+                await userManager.CreateAsync(user, "test1234");
             }
         }
 
         private static async Task SeedUserRoles(ApplicationDBContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            var user = await userManager.FindByNameAsync("tdoell");
-            var role = await roleManager.FindByNameAsync("Admin");
-
-            if (context.UserRoles.Any(e => e.UserId == user.Id && e.RoleId == role.Id) == false)
-            {
-                await userManager.AddToRoleAsync(user, role.Name);
-            }
+            await AddRoleToUser(context, userManager, roleManager, RoleTypes.AdminIdentifier, "tdoell");
+            await AddRoleToUser(context, userManager, roleManager, RoleTypes.MemberIdentifier, "tdoell");
         }
 
         private static async Task CreateRole(RoleManager<IdentityRole> roleManager, string roleName)
@@ -56,6 +52,17 @@ namespace GG.PrayerCentral.Configuration
             if (await roleManager.FindByNameAsync(roleName) == null)
             {
                 await roleManager.CreateAsync(new IdentityRole { Name = roleName });
+            }
+        }
+
+        private static async Task AddRoleToUser(ApplicationDBContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, string roleName, string userName)
+        {
+            var user = await userManager.FindByNameAsync(userName);
+            var role = await roleManager.FindByNameAsync(roleName);
+
+            if (context.UserRoles.Any(e => e.UserId == user.Id && e.RoleId == role.Id) == false)
+            {
+                await userManager.AddToRoleAsync(user, role.Name);
             }
         }
     }

@@ -41,11 +41,8 @@ namespace GG.PrayerCentral
 
             services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>().AddDefaultTokenProviders();
 
-            services.AddMvcCore().AddJsonFormatters().AddDataAnnotations().AddAuthorization(setupAction =>
-            {
-                setupAction.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-            });
-
+            SetupServiceCollection(services);
+                    
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -104,6 +101,22 @@ namespace GG.PrayerCentral
             {
                 await context.Response.WriteAsync("MVC didn't find anything!");
             });
+        }
+
+        private void SetupServiceCollection(IServiceCollection services)
+        {
+            var builder = services.AddMvcCore(options =>
+            {
+                options.Filters.Add(typeof(ValidateModelStateAttribute));
+            });
+
+            builder.AddApiExplorer();
+            builder.AddAuthorization();
+            builder.AddCacheTagHelper();
+            builder.AddDataAnnotations();
+            builder.AddJsonFormatters();
+
+            builder.AddCors();
         }
     }
 }
