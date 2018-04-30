@@ -5,8 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GG.ResultBundle" Version="1.0.0" />
     <PackageReference Include="GG.TypeFactory" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PrayerCentral.Common\PrayerCentral.Common.csproj" />
   </ItemGroup>
 
 </Project>

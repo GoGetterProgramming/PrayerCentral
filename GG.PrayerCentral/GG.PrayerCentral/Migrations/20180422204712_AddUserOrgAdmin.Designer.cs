@@ -11,9 +11,10 @@ using System;
 namespace GG.PrayerCentral.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20180422204712_AddUserOrgAdmin")]
+    partial class AddUserOrgAdmin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,9 +94,6 @@ namespace GG.PrayerCentral.Migrations
                         .IsRequired();
 
                     b.Property<DateTime>("DateJoined");
-
-                    b.Property<string>("JoinCode")
-                        .IsRequired();
 
                     b.Property<string>("Name")
                         .IsRequired();

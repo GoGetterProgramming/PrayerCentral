@@ -14,6 +14,8 @@ namespace GG.PrayerCentral.DBContext
         {
             builder.Entity<UserOrganization>().HasKey(c => new { c.OrganizationId, c.ApplicationUserId });
 
+            builder.Entity<Organization>().HasAlternateKey(nameof(Organization.JoinCode));
+
             base.OnModelCreating(builder);
         }
 

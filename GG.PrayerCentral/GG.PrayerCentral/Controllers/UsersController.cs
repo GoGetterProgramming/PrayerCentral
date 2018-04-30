@@ -30,16 +30,16 @@ namespace GG.PrayerCentral.Controllers
         [HttpPost(nameof(GetUser))]
         public async Task<IActionResult> GetUser([FromBody] RequestUserById requestUser)
         {
-            ResponeBundle<ApplicationUser> response;
+            ResponseBundle<ApplicationUser> response;
             ApplicationUser user = await _UserManager.FindByIdAsync(requestUser.Id);
 
             if (user == null)
             {
-                response = new ResponeBundle<ApplicationUser>(user, ResponseStatus.NotFound, "Requested user not found.");
+                response = new ResponseBundle<ApplicationUser>(user, ResponseStatus.NotFound, "Requested user not found.");
             }
             else
             {
-                response = new ResponeBundle<ApplicationUser>(user);
+                response = new ResponseBundle<ApplicationUser>(user);
             }
 
             return Ok(response);
@@ -63,7 +63,7 @@ namespace GG.PrayerCentral.Controllers
                 }
             }
             
-            return Ok(new ResponeBundle<List<ApplicationUser>>(users));
+            return Ok(new ResponseBundle<List<ApplicationUser>>(users));
         }
     }
 }

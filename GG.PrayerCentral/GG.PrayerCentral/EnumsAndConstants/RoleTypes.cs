@@ -3,7 +3,7 @@
     public static class RoleTypes
     {
         public const string AdminIdentifier = "Admin";
-        public const string OrganizationIdentifier = "OrgAdmin";
+        public const string OrganizationAdminIdentifier = "OrgAdmin";
         public const string PastorIdentifier = "Pastor";
         public const string MemberIdentifier = "Member";
     }

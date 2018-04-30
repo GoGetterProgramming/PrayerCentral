@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace GG.PrayerCentral.ResponseData
 {
-    public class ResponeBundle<T>
+    public class ResponseBundle<T>
     {
         public string Error { get; }
         public ResponseStatus Response { get; } = ResponseStatus.Success;
         public T Result { get; }
 
-        public ResponeBundle(T result)
+        public ResponseBundle(T result)
         {
             Result = result;
         }
 
-        public ResponeBundle(T result, ResponseStatus response, string error)
+        public ResponseBundle(T result, ResponseStatus response, string error)
         {
             Result = result;
             Response = response;

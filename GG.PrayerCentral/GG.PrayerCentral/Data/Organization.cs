@@ -25,6 +25,8 @@ namespace GG.PrayerCentral.Data
         [Required]
         public string ZipCode { get; set; }
         [Required]
+        public string JoinCode { get; set; }
+        [Required]
         [ReadOnly(true)]
         public DateTime DateJoined { get; set; }
         List<ServiceTime> ServiceTimes { get; set; } = new List<ServiceTime>();
